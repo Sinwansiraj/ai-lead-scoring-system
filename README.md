@@ -228,11 +228,6 @@ This bridges the gap between **ML predictions and business execution**.
 
 ---
 
-## 📝 Resume Bullet
-
-> Built a production-ready AI-driven lead scoring system using XGBoost to prioritize B2B CRM leads, improving conversion rates and sales efficiency through interpretable machine learning and prescriptive analytics.
-
----
 
 ## 📂 How to Run
 
