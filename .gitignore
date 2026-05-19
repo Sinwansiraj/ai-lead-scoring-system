@@ -1,6 +1,44 @@
-﻿venv/
+﻿# Python
+venv/
+.venv/
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Env
 .env
+.env.*
+!.env.example
+
+# Editors
 .DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Notebooks
 .ipynb_checkpoints/
+
+# Test & coverage
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Model artifacts (large binaries — store in model registry, not git)
+models/*.joblib
+models/*.pkl
+models/*.bin
+
+# Type checking
+.mypy_cache/
+
+# Ruff
+.ruff_cache/

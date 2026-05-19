@@ -1,0 +1,44 @@
+version: "3.9"
+
+services:
+
+  # ── Train + save model (runs once, exits) ────────────────────────────────
+  train:
+    build:
+      context: .
+      target: runtime
+    volumes:
+      - model_data:/app/models
+    environment:
+      - N_SAMPLES=5000
+      - LOG_LEVEL=INFO
+    command: ["python", "scripts/train.py"]
+    profiles:
+      - train  # only runs with: docker compose --profile train up train
+
+  # ── API server ────────────────────────────────────────────────────────────
+  api:
+    build:
+      context: .
+      target: runtime
+    ports:
+      - "${API_PORT:-8000}:8000"
+    volumes:
+      - model_data:/app/models   # share trained model with api
+    environment:
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - API_WORKERS=${API_WORKERS:-1}
+      - HOT_THRESHOLD=${HOT_THRESHOLD:-80}
+      - WARM_THRESHOLD=${WARM_THRESHOLD:-50}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    depends_on: []
+
+volumes:
+  model_data:
