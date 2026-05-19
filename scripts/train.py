@@ -14,7 +14,6 @@ from pathlib import Path
 # Allow running from the repo root without installing the package
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from lead_scoring.config import settings
 from lead_scoring.data.generator import generate_crm_data
 from lead_scoring.models.trainer import LeadScoringTrainer
 from lead_scoring.utils.logging import get_logger

@@ -7,7 +7,6 @@ from fastapi.testclient import TestClient
 
 from lead_scoring.api.main import create_app
 
-
 # ── Fixtures ───────────────────────────────────────────────────────────────────
 
 @pytest.fixture(scope="module")

@@ -87,7 +87,8 @@ class LeadDataPreprocessor:
                     raise ValueError(f"No fitted encoder for column '{col}'.")
                 # Handle unseen categories gracefully
                 known = set(le.classes_)
-                df[col] = df[col].astype(str).apply(lambda v: v if v in known else le.classes_[0])
+                fallback = le.classes_[0]
+                df[col] = df[col].astype(str).apply(lambda v, k=known, fb=fallback: v if v in k else fb)
                 df[f"{col}_encoded"] = le.transform(df[col])
         return df
 

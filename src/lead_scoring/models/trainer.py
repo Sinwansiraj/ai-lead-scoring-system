@@ -11,7 +11,6 @@ and can be serialised / deserialised with ``joblib``.
 
 from __future__ import annotations
 
-import logging
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -21,7 +20,6 @@ import numpy as np
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (
-    classification_report,
     confusion_matrix,
     f1_score,
     precision_score,

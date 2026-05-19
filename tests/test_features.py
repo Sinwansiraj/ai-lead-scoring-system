@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import pandas as pd
-import pytest
 
 from lead_scoring.features.engineering import LeadFeatureEngineering
 

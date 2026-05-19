@@ -14,8 +14,8 @@ from lead_scoring.api.schemas import (
     BatchScoreRequest,
     HealthResponse,
     LeadFeatures,
-    ScoreResponse,
     ScoredLead,
+    ScoreResponse,
 )
 from lead_scoring.features.engineering import LeadFeatureEngineering
 from lead_scoring.models.scorer import LeadScorer

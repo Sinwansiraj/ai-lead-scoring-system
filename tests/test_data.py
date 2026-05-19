@@ -9,7 +9,6 @@ import pytest
 from lead_scoring.data.generator import generate_crm_data
 from lead_scoring.data.preprocessor import LeadDataPreprocessor
 
-
 # ── Generator ──────────────────────────────────────────────────────────────────
 
 class TestGenerateCrmData:

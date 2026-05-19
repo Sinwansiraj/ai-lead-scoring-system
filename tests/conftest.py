@@ -7,14 +7,13 @@ well under 60 seconds even without caching.
 
 from __future__ import annotations
 
-import pytest
 import pandas as pd
+import pytest
 
 from lead_scoring.data.generator import generate_crm_data
 from lead_scoring.data.preprocessor import LeadDataPreprocessor
 from lead_scoring.features.engineering import LeadFeatureEngineering
 from lead_scoring.models.trainer import LeadScoringTrainer, ModelBundle
-
 
 # ── Raw data ───────────────────────────────────────────────────────────────────
 
