@@ -38,8 +38,12 @@ logger = get_logger(__name__)
 
 # Columns that must be excluded from the feature matrix
 _EXCLUDE_FROM_FEATURES = {
-    "lead_id", "converted",
-    "lead_source", "industry", "company_size", "region",
+    "lead_id",
+    "converted",
+    "lead_source",
+    "industry",
+    "company_size",
+    "region",
 }
 
 
@@ -127,14 +131,13 @@ class LeadScoringTrainer:
         df_fe = fe.engineer_features(df)
 
         # 2. Train / test split
-        feature_cols = [
-            c for c in df_fe.columns if c not in _EXCLUDE_FROM_FEATURES
-        ]
+        feature_cols = [c for c in df_fe.columns if c not in _EXCLUDE_FROM_FEATURES]
         X_raw = df_fe[feature_cols]
         y = df_fe["converted"]
 
         X_train_raw, X_test_raw, y_train, y_test = train_test_split(
-            X_raw, y,
+            X_raw,
+            y,
             test_size=settings.test_size,
             random_state=settings.random_seed,
             stratify=y,
@@ -143,12 +146,8 @@ class LeadScoringTrainer:
 
         # 3. Preprocessing (fit on train only)
         preprocessor = LeadDataPreprocessor()
-        train_proc = preprocessor.fit_transform(
-            df_fe.loc[X_train_raw.index]
-        )
-        test_proc = preprocessor.transform(
-            df_fe.loc[X_test_raw.index]
-        )
+        train_proc = preprocessor.fit_transform(df_fe.loc[X_train_raw.index])
+        test_proc = preprocessor.transform(df_fe.loc[X_test_raw.index])
         X_train = train_proc[feature_cols].values
         X_test = test_proc[feature_cols].values
 
@@ -162,9 +161,7 @@ class LeadScoringTrainer:
             "baseline": self._evaluate(
                 baseline, "Logistic Regression (Baseline)", X_train, X_test, y_train, y_test, cv
             ),
-            "production": self._evaluate(
-                production, "XGBoost (Production)", X_train, X_test, y_train, y_test, cv
-            ),
+            "production": self._evaluate(production, "XGBoost (Production)", X_train, X_test, y_train, y_test, cv),
         }
 
         for name, res in results.items():
@@ -258,8 +255,7 @@ class LeadScoringTrainer:
         load_path = path or settings.model_path
         if not load_path.exists():
             raise FileNotFoundError(
-                f"No model found at '{load_path}'. Run the training script first:\n"
-                "  python scripts/train.py"
+                f"No model found at '{load_path}'. Run the training script first:\n  python scripts/train.py"
             )
         bundle: ModelBundle = joblib.load(load_path)
         logger.info("Model bundle loaded ← %s  (AUC=%.4f)", load_path, bundle.metadata.get("production_roc_auc", 0))

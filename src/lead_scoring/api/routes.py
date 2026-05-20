@@ -28,6 +28,7 @@ router = APIRouter()
 
 # ── Dependency ─────────────────────────────────────────────────────────────────
 
+
 def get_bundle(request: Request) -> ModelBundle:
     """FastAPI dependency that retrieves the model bundle from app state."""
     bundle: ModelBundle | None = request.app.state.bundle
@@ -40,6 +41,7 @@ def get_bundle(request: Request) -> ModelBundle:
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
+
 
 def _leads_to_df(leads: list[LeadFeatures]) -> pd.DataFrame:
     """Convert a list of Pydantic request objects to a pandas DataFrame."""
@@ -65,6 +67,7 @@ def _df_to_scored_leads(scored_df: pd.DataFrame) -> list[ScoredLead]:
 
 
 # ── Routes ─────────────────────────────────────────────────────────────────────
+
 
 @router.get("/health", response_model=HealthResponse, tags=["System"])
 async def health_check(request: Request) -> HealthResponse:
@@ -120,7 +123,10 @@ async def score_batch(request_body: BatchScoreRequest, bundle: ModelBundle = Dep
     cold = (scored["lead_category"] == "Cold").sum()
     logger.info(
         "Batch scored %d leads: Hot=%d Warm=%d Cold=%d",
-        len(request_body.leads), hot, warm, cold,
+        len(request_body.leads),
+        hot,
+        warm,
+        cold,
     )
     return ScoreResponse(
         scored_leads=_df_to_scored_leads(scored),

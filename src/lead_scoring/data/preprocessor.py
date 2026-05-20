@@ -95,8 +95,7 @@ class LeadDataPreprocessor:
     def _scale_numerics(self, df: pd.DataFrame, *, fit: bool) -> pd.DataFrame:
         if fit:
             self.numeric_cols = [
-                c for c in df.columns
-                if df[c].dtype in ("int64", "float64") and c not in NON_FEATURE_COLS
+                c for c in df.columns if df[c].dtype in ("int64", "float64") and c not in NON_FEATURE_COLS
             ]
         if self.numeric_cols:
             if fit:

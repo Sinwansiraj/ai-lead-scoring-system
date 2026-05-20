@@ -13,10 +13,18 @@ from lead_scoring.models.trainer import LeadScoringTrainer, ModelBundle
 
 # ── Scorer ─────────────────────────────────────────────────────────────────────
 
+
 class TestLeadScorer:
-    @pytest.mark.parametrize("prob,expected", [
-        (0.0, 0), (0.5, 50), (1.0, 100), (0.856, 86), (0.001, 0),
-    ])
+    @pytest.mark.parametrize(
+        "prob,expected",
+        [
+            (0.0, 0),
+            (0.5, 50),
+            (1.0, 100),
+            (0.856, 86),
+            (0.001, 0),
+        ],
+    )
     def test_probability_to_score(self, prob, expected):
         assert LeadScorer.probability_to_score(prob) == expected
 
@@ -71,6 +79,7 @@ class TestLeadScorer:
 
 # ── Trainer ────────────────────────────────────────────────────────────────────
 
+
 class TestLeadScoringTrainer:
     def test_train_returns_bundle_and_results(self, raw_df):
         trainer = LeadScoringTrainer()
@@ -82,9 +91,7 @@ class TestLeadScoringTrainer:
     def test_production_auc_above_threshold(self, model_bundle, raw_df):
         trainer = LeadScoringTrainer()
         _, results = trainer.train(raw_df)
-        assert results["production"].roc_auc >= 0.70, (
-            f"ROC-AUC {results['production'].roc_auc:.4f} below floor of 0.70"
-        )
+        assert results["production"].roc_auc >= 0.70, f"ROC-AUC {results['production'].roc_auc:.4f} below floor of 0.70"
 
     def test_bundle_predict_proba_shape(self, model_bundle, single_lead_df):
         probs = model_bundle.predict_proba(single_lead_df)

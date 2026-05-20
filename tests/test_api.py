@@ -9,6 +9,7 @@ from lead_scoring.api.main import create_app
 
 # ── Fixtures ───────────────────────────────────────────────────────────────────
 
+
 @pytest.fixture(scope="module")
 def client_with_model(model_bundle):
     """Test client with a real trained model loaded into app state."""
@@ -46,6 +47,7 @@ GOOD_LEAD = {
 
 # ── Health ─────────────────────────────────────────────────────────────────────
 
+
 class TestHealthEndpoint:
     def test_health_returns_200_with_model(self, client_with_model):
         resp = client_with_model.get("/api/v1/health")
@@ -66,6 +68,7 @@ class TestHealthEndpoint:
 
 
 # ── Single score ───────────────────────────────────────────────────────────────
+
 
 class TestScoreEndpoint:
     def test_score_returns_200(self, client_with_model):
@@ -115,6 +118,7 @@ class TestScoreEndpoint:
 
 # ── Batch score ────────────────────────────────────────────────────────────────
 
+
 class TestBatchScoreEndpoint:
     def test_batch_returns_200(self, client_with_model):
         payload = {"leads": [GOOD_LEAD, {**GOOD_LEAD, "lead_id": "TEST002", "demo_requested": 0}]}
@@ -127,10 +131,7 @@ class TestBatchScoreEndpoint:
         assert len(body["scored_leads"]) == 2
 
     def test_batch_sorted_by_score_desc(self, client_with_model):
-        leads = [
-            {**GOOD_LEAD, "lead_id": f"L{i}", "demo_requested": i % 2, "website_visits": i}
-            for i in range(5)
-        ]
+        leads = [{**GOOD_LEAD, "lead_id": f"L{i}", "demo_requested": i % 2, "website_visits": i} for i in range(5)]
         body = client_with_model.post("/api/v1/score/batch", json={"leads": leads}).json()
         scores = [sl["lead_quality_score"] for sl in body["scored_leads"]]
         assert scores == sorted(scores, reverse=True)
@@ -141,6 +142,7 @@ class TestBatchScoreEndpoint:
 
 
 # ── Root ───────────────────────────────────────────────────────────────────────
+
 
 class TestRoot:
     def test_root_returns_200(self, client_with_model):

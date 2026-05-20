@@ -39,8 +39,7 @@ def main() -> None:
     prod_auc = results["production"].roc_auc
     if prod_auc < 0.80:
         logger.error(
-            "Production model ROC-AUC %.4f is below the 0.80 threshold. "
-            "Model NOT saved. Check your features and data.",
+            "Production model ROC-AUC %.4f is below the 0.80 threshold. Model NOT saved. Check your features and data.",
             prod_auc,
         )
         sys.exit(1)

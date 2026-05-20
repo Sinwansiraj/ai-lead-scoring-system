@@ -20,15 +20,23 @@ logger = get_logger(__name__)
 LEAD_SOURCES = ["Website", "Referral", "LinkedIn Ads", "Cold Call", "Conference", "Partner"]
 LEAD_SOURCE_PROBS = [0.35, 0.20, 0.25, 0.10, 0.05, 0.05]
 LEAD_SOURCE_WEIGHTS = {
-    "Referral": 25, "Website": 15, "Conference": 20,
-    "LinkedIn Ads": 10, "Cold Call": 5, "Partner": 20,
+    "Referral": 25,
+    "Website": 15,
+    "Conference": 20,
+    "LinkedIn Ads": 10,
+    "Cold Call": 5,
+    "Partner": 20,
 }
 
 INDUSTRIES = ["SaaS", "Fintech", "E-commerce", "Healthcare", "Manufacturing", "Consulting"]
 INDUSTRY_PROBS = [0.25, 0.20, 0.18, 0.15, 0.12, 0.10]
 INDUSTRY_WEIGHTS = {
-    "SaaS": 15, "Fintech": 18, "E-commerce": 12,
-    "Healthcare": 10, "Manufacturing": 8, "Consulting": 7,
+    "SaaS": 15,
+    "Fintech": 18,
+    "E-commerce": 12,
+    "Healthcare": 10,
+    "Manufacturing": 8,
+    "Consulting": 7,
 }
 
 COMPANY_SIZES = ["SMB", "Mid-Market", "Enterprise"]

@@ -11,6 +11,7 @@ from lead_scoring.data.preprocessor import LeadDataPreprocessor
 
 # ── Generator ──────────────────────────────────────────────────────────────────
 
+
 class TestGenerateCrmData:
     def test_returns_dataframe(self):
         df = generate_crm_data(n_samples=100)
@@ -22,9 +23,18 @@ class TestGenerateCrmData:
 
     def test_has_required_columns(self):
         expected = {
-            "lead_id", "lead_source", "industry", "company_size", "region",
-            "website_visits", "email_opens", "email_clicks", "demo_requested",
-            "days_since_interaction", "followup_count", "converted",
+            "lead_id",
+            "lead_source",
+            "industry",
+            "company_size",
+            "region",
+            "website_visits",
+            "email_opens",
+            "email_clicks",
+            "demo_requested",
+            "days_since_interaction",
+            "followup_count",
+            "converted",
         }
         df = generate_crm_data(n_samples=50)
         assert expected.issubset(set(df.columns))
@@ -59,6 +69,7 @@ class TestGenerateCrmData:
 
 
 # ── Preprocessor ───────────────────────────────────────────────────────────────
+
 
 class TestLeadDataPreprocessor:
     def test_fit_transform_returns_dataframe(self, engineered_df):

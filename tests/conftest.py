@@ -17,6 +17,7 @@ from lead_scoring.models.trainer import LeadScoringTrainer, ModelBundle
 
 # ── Raw data ───────────────────────────────────────────────────────────────────
 
+
 @pytest.fixture(scope="session")
 def raw_df() -> pd.DataFrame:
     """200-row synthetic CRM dataset (session-scoped for speed)."""
@@ -25,12 +26,14 @@ def raw_df() -> pd.DataFrame:
 
 # ── Engineered data ────────────────────────────────────────────────────────────
 
+
 @pytest.fixture(scope="session")
 def engineered_df(raw_df: pd.DataFrame) -> pd.DataFrame:
     return LeadFeatureEngineering.engineer_features(raw_df)
 
 
 # ── Fitted preprocessor ────────────────────────────────────────────────────────
+
 
 @pytest.fixture(scope="session")
 def fitted_preprocessor(engineered_df: pd.DataFrame) -> LeadDataPreprocessor:
@@ -41,6 +44,7 @@ def fitted_preprocessor(engineered_df: pd.DataFrame) -> LeadDataPreprocessor:
 
 # ── Trained model bundle ───────────────────────────────────────────────────────
 
+
 @pytest.fixture(scope="session")
 def model_bundle(raw_df: pd.DataFrame) -> ModelBundle:
     """Full end-to-end trained bundle (session-scoped — trained once per run)."""
@@ -50,6 +54,7 @@ def model_bundle(raw_df: pd.DataFrame) -> ModelBundle:
 
 
 # ── Single-lead DataFrame ──────────────────────────────────────────────────────
+
 
 @pytest.fixture()
 def single_lead_df() -> pd.DataFrame:

@@ -33,11 +33,7 @@ class LeadFeatureEngineering:
         Clicks carry more intent signal than opens, which carry more than visits.
         Normalised to [0, 100].
         """
-        raw = (
-            df["website_visits"] * 0.3
-            + df["email_opens"] * 0.2
-            + df["email_clicks"] * 0.5
-        )
+        raw = df["website_visits"] * 0.3 + df["email_opens"] * 0.2 + df["email_clicks"] * 0.5
         max_val = raw.max()
         if max_val == 0:
             return pd.Series(np.zeros(len(df)), index=df.index)
@@ -60,12 +56,7 @@ class LeadFeatureEngineering:
 
         Captures whether a lead engages *frequently* or just once long ago.
         """
-        total = (
-            df["website_visits"]
-            + df["email_opens"]
-            + df["email_clicks"]
-            + df["followup_count"]
-        )
+        total = df["website_visits"] + df["email_opens"] + df["email_clicks"] + df["followup_count"]
         weeks_active = (df["days_since_interaction"] / 7).clip(lower=1)
         raw = total / weeks_active
         max_val = raw.max()
@@ -82,11 +73,7 @@ class LeadFeatureEngineering:
         """
         Composite "ready to buy" signal combining demo intent with recency and engagement.
         """
-        return (
-            df["demo_requested"] * 50
-            + engagement_score * 0.3
-            + recency_score * 0.2
-        ).clip(0, 100)
+        return (df["demo_requested"] * 50 + engagement_score * 0.3 + recency_score * 0.2).clip(0, 100)
 
     # ── Master transformer ─────────────────────────────────────────────────
 

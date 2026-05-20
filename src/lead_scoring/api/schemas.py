@@ -14,6 +14,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 # ── Enums ──────────────────────────────────────────────────────────────────────
 
+
 class LeadSource(str, Enum):
     website = "Website"
     referral = "Referral"
@@ -53,6 +54,7 @@ class LeadCategory(str, Enum):
 
 # ── Request schemas ────────────────────────────────────────────────────────────
 
+
 class LeadFeatures(BaseModel):
     """
     Raw CRM fields for a single lead.
@@ -80,6 +82,7 @@ class BatchScoreRequest(BaseModel):
 
 
 # ── Response schemas ───────────────────────────────────────────────────────────
+
 
 class ScoredLead(BaseModel):
     lead_id: str
