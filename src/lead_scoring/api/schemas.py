@@ -12,7 +12,6 @@ from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, Field
 
-
 # ── Enums ──────────────────────────────────────────────────────────────────────
 
 class LeadSource(str, Enum):

@@ -28,6 +28,7 @@ where = ["src"]
 line-length = 120
 target-version = "py310"
 src = ["src", "tests", "scripts"]
+exclude = ["*.ipynb", "venv", ".venv"]
 
 [tool.ruff.lint]
 select = [

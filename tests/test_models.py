@@ -11,7 +11,6 @@ import pytest
 from lead_scoring.models.scorer import LeadScorer
 from lead_scoring.models.trainer import LeadScoringTrainer, ModelBundle
 
-
 # ── Scorer ─────────────────────────────────────────────────────────────────────
 
 class TestLeadScorer:
