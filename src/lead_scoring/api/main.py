@@ -30,18 +30,20 @@ logger = get_logger(__name__)
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """
     Load the model bundle on startup; release on shutdown.
-    If no model is found, the API still starts — health check reports 503.
+    If no model is found, the API still starts — health check reports model_loaded=False.
+    Skips disk load if a bundle has already been injected (e.g. in tests).
     """
-    app.state.bundle = None
-    try:
-        bundle: ModelBundle = LeadScoringTrainer.load()
-        app.state.bundle = bundle
-        logger.info(
-            "Model loaded successfully (ROC-AUC=%.4f)",
-            bundle.metadata.get("production_roc_auc", 0.0),
-        )
-    except FileNotFoundError as exc:
-        logger.warning("Model not found on startup: %s", exc)
+    if getattr(app.state, "bundle", None) is None:
+        try:
+            bundle: ModelBundle = LeadScoringTrainer.load()
+            app.state.bundle = bundle
+            logger.info(
+                "Model loaded successfully (ROC-AUC=%.4f)",
+                bundle.metadata.get("production_roc_auc", 0.0),
+            )
+        except FileNotFoundError as exc:
+            app.state.bundle = None
+            logger.warning("Model not found on startup: %s", exc)
 
     yield  # ── application runs here ──
 
