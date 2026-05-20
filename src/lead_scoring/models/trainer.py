@@ -159,8 +159,12 @@ class LeadScoringTrainer:
         # 5. Evaluate
         cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=settings.random_seed)
         results: dict[str, EvaluationResult] = {
-            "baseline": self._evaluate(baseline, "Logistic Regression (Baseline)", X_train, X_test, y_train, y_test, cv),
-            "production": self._evaluate(production, "XGBoost (Production)", X_train, X_test, y_train, y_test, cv),
+            "baseline": self._evaluate(
+                baseline, "Logistic Regression (Baseline)", X_train, X_test, y_train, y_test, cv
+            ),
+            "production": self._evaluate(
+                production, "XGBoost (Production)", X_train, X_test, y_train, y_test, cv
+            ),
         }
 
         for name, res in results.items():
