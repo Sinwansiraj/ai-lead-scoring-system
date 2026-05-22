@@ -34,7 +34,9 @@ COPY src/ ./src/
 COPY scripts/ ./scripts/
 
 # Pre-create the models directory; CI/CD or init containers populate it
-RUN mkdir -p models && chown -R appuser:appgroup /app
+RUN mkdir -p models \
+    && chmod +x scripts/start.sh \
+    && chown -R appuser:appgroup /app
 
 USER appuser
 
@@ -48,5 +50,4 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health')"
 
-CMD ["python", "-m", "uvicorn", "lead_scoring.api.main:app", \
-     "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
+CMD ["./scripts/start.sh"]
