@@ -290,7 +290,7 @@ pytest tests/ --cov=src/lead_scoring --cov-report=term-missing
 pytest tests/test_api.py -v
 ```
 
-**67 tests** covering:
+**71 tests** covering:
 - Data generation (row count, conversion rate, reproducibility, no nulls)
 - Feature engineering (score ranges, edge cases, single-row inference)
 - Model training (AUC threshold, save/load round-trip, batch predict)
@@ -320,7 +320,7 @@ Push / PR
 └──────────┬──────────┘
            ▼ (main branch only)
 ┌─────────────────────┐
-│  Push to GHCR       │  ghcr.io/Sinwansiraj/ai-lead-scoring-system:latest
+│  Push to GHCR       │  ghcr.io/sinwansiraj/ai-lead-scoring-system:latest
 └─────────────────────┘
 ```
 
