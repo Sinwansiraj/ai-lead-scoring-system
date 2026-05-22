@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lead Scoring Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      circle { transition: stroke-dasharray 0.9s cubic-bezier(0.4, 0, 0.2, 1); }
+
+      body {
+        background-color: #0a0f1e;
+        background-image:
+          radial-gradient(ellipse 80% 50% at 50% -10%, rgba(99,102,241,0.18) 0%, transparent 60%),
+          radial-gradient(circle at 1px 1px, rgba(99,102,241,0.07) 1px, transparent 0);
+        background-size: 100% 100%, 28px 28px;
+      }
+
+      @keyframes fadeSlideUp {
+        from { opacity: 0; transform: translateY(16px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+      .animate-in { animation: fadeSlideUp 0.4s ease both; }
+
+      @keyframes pulseGlow {
+        0%, 100% { filter: drop-shadow(0 0 6px var(--glow-color)); }
+        50%       { filter: drop-shadow(0 0 14px var(--glow-color)); }
+      }
+      .gauge-glow { animation: pulseGlow 2.4s ease-in-out infinite; }
+    </style>
+  </head>
+  <body class="bg-slate-900 antialiased">
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
