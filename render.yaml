@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: ai-lead-scoring-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    region: oregon
+    plan: free
+
+    # Train model then start the API
+    dockerCommand: >-
+      sh -c "python scripts/train.py && python -m uvicorn lead_scoring.api.main:app --host 0.0.0.0 --port $PORT --workers 1"
+
+    envVars:
+      - key: PYTHONPATH
+        value: /app/src
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: LOG_LEVEL
+        value: INFO
+      # MODEL_PATH defaults to models/lead_scoring_bundle.joblib (relative to /app)
+      - key: MODEL_PATH
+        value: models/lead_scoring_bundle.joblib
+
+    healthCheckPath: /api/v1/health
