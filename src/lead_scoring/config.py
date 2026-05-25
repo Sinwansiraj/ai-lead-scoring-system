@@ -64,6 +64,16 @@ class Settings(BaseSettings):
         le=1.0,
         description="Weight for recency score (time-decay since last interaction) in composite score",
     )
+    score_floor_multiplier: float = Field(
+        default=0.60,
+        ge=0.0,
+        le=1.0,
+        description=(
+            "Behavioural floor multiplier. A lead's final score is always at least "
+            "floor_multiplier × (0.6 × engagement + 0.4 × recency), preventing highly "
+            "engaged recent leads from being buried by a low model probability alone."
+        ),
+    )
 
     @property
     def model_path(self) -> Path:

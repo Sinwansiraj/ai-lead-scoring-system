@@ -39,11 +39,22 @@ class TestLeadScorer:
         assert score == 77
 
     def test_composite_score_engagement_boosts_cold_lead(self):
-        """L0080 pattern: prob≈4% but eng=100 and rec=61 should not score near-zero."""
+        """L0080 pattern: prob≈4% but eng=100 and rec=61 should reach Warm via floor."""
         score = LeadScorer.composite_score(0.0414, engagement_score=100.0, recency_score=60.65)
-        # 0.60*4.14 + 0.25*100 + 0.15*60.65 ≈ 2.5 + 25.0 + 9.1 = 36.6 → 37
-        assert score >= 30, f"Expected ≥30 for highly engaged lead, got {score}"
-        assert score < 50, f"Expected <50 (Cold category) for low-prob lead, got {score}"
+        # composite = 0.60*4.14 + 0.25*100 + 0.15*60.65 ≈ 37
+        # floor     = 0.60 * (0.60*100 + 0.40*60.65)    ≈ 51  ← floor wins
+        assert score >= 50, f"Expected ≥50 (Warm) for highly engaged lead, got {score}"
+
+    def test_composite_score_floor_does_not_affect_high_prob_leads(self):
+        """Behavioural floor must never lower a score that the composite already earned."""
+        score_no_floor = round(0.60 * 97.16 + 0.25 * 78.08 + 0.15 * 81.87)  # L0420 ≈ 90
+        score = LeadScorer.composite_score(0.9716, engagement_score=78.08, recency_score=81.87)
+        assert score >= score_no_floor, "Floor should never reduce a strong lead's score"
+
+    def test_composite_score_floor_zero_for_disengaged_lead(self):
+        """Lead with eng=0 and rec≈0 gets no floor boost."""
+        score = LeadScorer.composite_score(0.009, engagement_score=0.0, recency_score=6.72)
+        assert score <= 5, f"Dead lead should still score near-zero, got {score}"
 
     def test_composite_score_pure_model_via_explicit_weights(self):
         """With 100% weight on probability, composite == probability_to_score."""

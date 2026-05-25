@@ -52,7 +52,15 @@ class LeadScorer:
         rw = recency_weight if recency_weight is not None else settings.score_recency_weight
 
         composite = pw * (probability * 100) + ew * engagement_score + rw * recency_score
-        return max(0, min(100, round(composite)))
+
+        # Behavioural floor: protect highly engaged + recently active leads from being
+        # buried by a low model probability alone.  The floor is a fraction of a
+        # weighted behavioural signal (60 % engagement, 40 % recency) and only kicks
+        # in when it exceeds the composite — so top leads are completely unaffected.
+        behavioural = 0.60 * engagement_score + 0.40 * recency_score
+        floor = settings.score_floor_multiplier * behavioural
+
+        return max(0, min(100, round(max(composite, floor))))
 
     @staticmethod
     def score_to_category(score: int) -> str:
