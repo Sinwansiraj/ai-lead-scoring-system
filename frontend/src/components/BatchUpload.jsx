@@ -8,25 +8,17 @@ const CAT = {
   Cold: { cls: "text-blue-300 bg-blue-500/10 border-blue-500/25",  bar: "#3b82f6", card: "border-blue-500/30 bg-blue-500/5" },
 }
 
-const SAMPLE_CSV = `lead_id,lead_source,industry,company_size,region,website_visits,email_opens,email_clicks,demo_requested,days_since_interaction,followup_count
-L001,Referral,SaaS,Enterprise,North America,15,8,5,1,1,4
-L002,LinkedIn,FinTech,Mid-Market,Europe,3,1,0,0,30,1
-L003,Website,E-commerce,SMB,Asia Pacific,7,4,2,1,5,2
-L004,Cold Call,Manufacturing,Startup,Latin America,1,0,0,0,60,0
-L005,Email Campaign,HealthTech,Enterprise,North America,20,12,8,1,2,6`
-
-function parseCsv(text) {
-  const lines = text.trim().split("\n").filter(Boolean)
-  if (lines.length < 2) throw new Error("Need a header row + at least one data row")
-  const headers = lines[0].split(",").map(h => h.trim())
-  const NUM = new Set(["website_visits","email_opens","email_clicks","demo_requested","days_since_interaction","followup_count"])
-  return lines.slice(1).map(line => {
-    const vals = line.split(",").map(v => v.trim())
-    const obj = {}
-    headers.forEach((h, i) => { obj[h] = NUM.has(h) ? Number(vals[i] ?? 0) : (vals[i] ?? "") })
-    return obj
-  })
-}
+const SAMPLE_JSON = JSON.stringify(
+  [
+    { lead_id: "L001", lead_source: "Referral",     industry: "SaaS",         company_size: "Enterprise", region: "North America", website_visits: 15, email_opens: 8,  email_clicks: 5, demo_requested: 1, days_since_interaction: 1,  followup_count: 4 },
+    { lead_id: "L002", lead_source: "LinkedIn Ads", industry: "Fintech",      company_size: "Mid-Market", region: "Europe",        website_visits: 3,  email_opens: 1,  email_clicks: 0, demo_requested: 0, days_since_interaction: 30, followup_count: 1 },
+    { lead_id: "L003", lead_source: "Website",      industry: "E-commerce",   company_size: "SMB",        region: "Asia Pacific",  website_visits: 7,  email_opens: 4,  email_clicks: 2, demo_requested: 1, days_since_interaction: 5,  followup_count: 2 },
+    { lead_id: "L004", lead_source: "Cold Call",    industry: "Manufacturing", company_size: "SMB",        region: "Latin America", website_visits: 1,  email_opens: 0,  email_clicks: 0, demo_requested: 0, days_since_interaction: 60, followup_count: 0 },
+    { lead_id: "L005", lead_source: "Referral",     industry: "Healthcare",   company_size: "Enterprise", region: "North America", website_visits: 20, email_opens: 12, email_clicks: 8, demo_requested: 1, days_since_interaction: 2,  followup_count: 6 },
+  ],
+  null,
+  2
+)
 
 function Spinner() {
   return (
@@ -56,16 +48,25 @@ function SummaryCard({ label, count, total, color }) {
 }
 
 export default function BatchUpload() {
-  const [csv, setCsv]       = useState("")
+  const [json, setJson]       = useState("")
   const [loading, setLoading] = useState(false)
   const [results, setResults] = useState(null)
-  const [error, setError]   = useState(null)
+  const [error, setError]     = useState(null)
 
   async function handleScore() {
     setError(null); setResults(null)
+
     let leads
-    try { leads = parseCsv(csv) }
-    catch (e) { setError("CSV parse error: " + e.message); return }
+    try {
+      const parsed = JSON.parse(json)
+      leads = Array.isArray(parsed) ? parsed : parsed.leads
+      if (!Array.isArray(leads) || leads.length === 0)
+        throw new Error("Expected a JSON array of lead objects (or { leads: [...] }).")
+    } catch (e) {
+      setError("JSON parse error: " + e.message)
+      return
+    }
+
     setLoading(true)
     try {
       const res = await fetch(`${API_BASE}/api/v1/score/batch`, {
@@ -73,7 +74,14 @@ export default function BatchUpload() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ leads }),
       })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        const detail = body.detail
+        const msg = Array.isArray(detail)
+          ? detail.map(d => `${d.loc?.slice(-1)[0] ?? "field"}: ${d.msg}`).join(" · ")
+          : (detail ?? `HTTP ${res.status}`)
+        throw new Error(msg)
+      }
       setResults(await res.json())
     } catch (e) { setError(e.message) }
     finally { setLoading(false) }
@@ -89,31 +97,57 @@ export default function BatchUpload() {
       {/* Input */}
       <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-base font-semibold text-white">Paste CSV</h2>
-          <button onClick={() => setCsv(SAMPLE_CSV)} className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors">
+          <div>
+            <h2 className="text-base font-semibold text-white">Paste JSON</h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Array of lead objects or{" "}
+              <span className="font-mono bg-slate-900/60 px-1 rounded">{"{ leads: [...] }"}</span>
+            </p>
+          </div>
+          <button
+            onClick={() => setJson(SAMPLE_JSON)}
+            className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
+          >
             Load 5 sample leads →
           </button>
         </div>
+
         <textarea
-          className="w-full h-44 bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-xs font-mono text-slate-300 placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/40 resize-none transition-colors"
-          placeholder={`lead_id,lead_source,industry,company_size,region,...\nL001,Referral,SaaS,Enterprise,...`}
-          value={csv}
-          onChange={e => setCsv(e.target.value)}
+          className="w-full h-56 bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-xs font-mono text-slate-300 placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/40 resize-none transition-colors"
+          placeholder={`[\n  {\n    "lead_id": "L001",\n    "lead_source": "Referral",\n    "industry": "SaaS",\n    "company_size": "Enterprise",\n    ...\n  }\n]`}
+          value={json}
+          onChange={e => setJson(e.target.value)}
+          spellCheck={false}
         />
-        <div className="flex items-start justify-between mt-3 gap-4">
-          <p className="text-xs text-slate-600 leading-relaxed">
-            Columns: lead_id · lead_source · industry · company_size · region · website_visits · email_opens · email_clicks · demo_requested · days_since_interaction · followup_count
-          </p>
+
+        {/* Enum quick-reference */}
+        <div className="mt-3 grid grid-cols-1 gap-y-1 text-xs text-slate-600">
+          {[
+            ["lead_source",  "Website · Referral · LinkedIn Ads · Cold Call · Conference · Partner"],
+            ["industry",     "SaaS · Fintech · E-commerce · Healthcare · Manufacturing · Consulting"],
+            ["company_size", "SMB · Mid-Market · Enterprise"],
+            ["region",       "North America · Europe · Asia Pacific · Latin America"],
+          ].map(([field, vals]) => (
+            <p key={field}>
+              <span className="font-mono text-slate-500">{field}:</span>{" "}{vals}
+            </p>
+          ))}
+        </div>
+
+        <div className="flex items-center justify-end mt-4">
           <button
             onClick={handleScore}
-            disabled={!csv.trim() || loading}
-            className="shrink-0 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold text-sm transition-all duration-150 flex items-center gap-2 shadow-lg shadow-indigo-500/20"
+            disabled={!json.trim() || loading}
+            className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold text-sm transition-all duration-150 flex items-center gap-2 shadow-lg shadow-indigo-500/20"
           >
             {loading ? <><Spinner /> Scoring…</> : "Score Batch"}
           </button>
         </div>
+
         {error && (
-          <p className="mt-3 text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">⚠ {error}</p>
+          <p className="mt-3 text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 font-mono whitespace-pre-wrap">
+            ⚠ {error}
+          </p>
         )}
       </div>
 
