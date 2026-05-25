@@ -45,6 +45,26 @@ class Settings(BaseSettings):
     hot_threshold: int = Field(default=80, ge=0, le=100)
     warm_threshold: int = Field(default=50, ge=0, le=100)
 
+    # ── Composite score blend weights (should sum to 1.0) ──────────────────
+    score_prob_weight: float = Field(
+        default=0.60,
+        ge=0.0,
+        le=1.0,
+        description="Weight for model conversion probability in the composite quality score",
+    )
+    score_engagement_weight: float = Field(
+        default=0.25,
+        ge=0.0,
+        le=1.0,
+        description="Weight for engagement score (website visits, email clicks) in composite score",
+    )
+    score_recency_weight: float = Field(
+        default=0.15,
+        ge=0.0,
+        le=1.0,
+        description="Weight for recency score (time-decay since last interaction) in composite score",
+    )
+
     @property
     def model_path(self) -> Path:
         return self.model_dir / self.model_filename

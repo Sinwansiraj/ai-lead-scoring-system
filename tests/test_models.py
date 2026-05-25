@@ -15,6 +15,8 @@ from lead_scoring.models.trainer import LeadScoringTrainer, ModelBundle
 
 
 class TestLeadScorer:
+    # ── Raw probability→score helper (unchanged utility) ───────────────────
+
     @pytest.mark.parametrize(
         "prob,expected",
         [
@@ -27,6 +29,44 @@ class TestLeadScorer:
     )
     def test_probability_to_score(self, prob, expected):
         assert LeadScorer.probability_to_score(prob) == expected
+
+    # ── Composite score blending ───────────────────────────────────────────
+
+    def test_composite_score_high_prob_dominates(self):
+        """High probability lead stays high even with average behavioural signals."""
+        score = LeadScorer.composite_score(0.95, engagement_score=50.0, recency_score=50.0)
+        # 0.60*95 + 0.25*50 + 0.15*50 = 57 + 12.5 + 7.5 = 77
+        assert score == 77
+
+    def test_composite_score_engagement_boosts_cold_lead(self):
+        """L0080 pattern: prob≈4% but eng=100 and rec=61 should not score near-zero."""
+        score = LeadScorer.composite_score(0.0414, engagement_score=100.0, recency_score=60.65)
+        # 0.60*4.14 + 0.25*100 + 0.15*60.65 ≈ 2.5 + 25.0 + 9.1 = 36.6 → 37
+        assert score >= 30, f"Expected ≥30 for highly engaged lead, got {score}"
+        assert score < 50, f"Expected <50 (Cold category) for low-prob lead, got {score}"
+
+    def test_composite_score_pure_model_via_explicit_weights(self):
+        """With 100% weight on probability, composite == probability_to_score."""
+        prob = 0.73
+        assert LeadScorer.composite_score(prob, 0.0, 0.0, prob_weight=1.0, engagement_weight=0.0, recency_weight=0.0) == 73
+
+    def test_composite_score_clamps_to_0_100(self):
+        assert LeadScorer.composite_score(0.0, 0.0, 0.0) == 0
+        assert LeadScorer.composite_score(1.0, 100.0, 100.0) == 100
+
+    def test_composite_score_recency_matters(self):
+        """Same prob + engagement, but fresher lead should score higher."""
+        fresh = LeadScorer.composite_score(0.40, engagement_score=60.0, recency_score=100.0)
+        stale = LeadScorer.composite_score(0.40, engagement_score=60.0, recency_score=0.0)
+        assert fresh > stale
+
+    def test_composite_score_engagement_matters(self):
+        """Same prob + recency, but more engaged lead should score higher."""
+        active = LeadScorer.composite_score(0.30, engagement_score=100.0, recency_score=50.0)
+        dormant = LeadScorer.composite_score(0.30, engagement_score=0.0, recency_score=50.0)
+        assert active > dormant
+
+    # ── Category thresholds ────────────────────────────────────────────────
 
     def test_score_to_category_hot(self):
         assert LeadScorer.score_to_category(90) == "Hot"
@@ -42,6 +82,8 @@ class TestLeadScorer:
 
     def test_score_to_category_boundary_warm(self):
         assert LeadScorer.score_to_category(50) == "Warm"
+
+    # ── Recommended action ─────────────────────────────────────────────────
 
     def test_recommend_action_hot_recent(self):
         action = LeadScorer.recommend_action("Hot", engagement_score=70, recency_score=80)
@@ -59,6 +101,8 @@ class TestLeadScorer:
         action = LeadScorer.recommend_action("Cold", engagement_score=20, recency_score=10)
         assert "Re-qualification" in action
 
+    # ── score_dataframe ────────────────────────────────────────────────────
+
     def test_score_dataframe_columns(self, engineered_df):
         probs = np.random.default_rng(0).uniform(0, 1, len(engineered_df))
         result = LeadScorer.score_dataframe(engineered_df, probs)
@@ -75,6 +119,23 @@ class TestLeadScorer:
         probs = np.random.default_rng(2).uniform(0, 1, len(engineered_df))
         result = LeadScorer.score_dataframe(engineered_df, probs)
         assert result[["lead_quality_score", "lead_category", "recommended_action"]].isnull().sum().sum() == 0
+
+    def test_score_dataframe_uses_engagement_and_recency(self, engineered_df):
+        """Two leads with identical probability but very different engagement should score differently."""
+        import pandas as pd
+
+        base = engineered_df.iloc[:2].copy()
+        probs = [0.20, 0.20]
+
+        # Force divergent behavioural signals directly on the rows
+        base.iloc[0, base.columns.get_loc("engagement_score")] = 100.0
+        base.iloc[0, base.columns.get_loc("recency_score")] = 100.0
+        base.iloc[1, base.columns.get_loc("engagement_score")] = 0.0
+        base.iloc[1, base.columns.get_loc("recency_score")] = 0.0
+
+        result = LeadScorer.score_dataframe(base, probs)
+        scores = result.set_index("lead_id")["lead_quality_score"] if "lead_id" in result.columns else result["lead_quality_score"]
+        assert result["lead_quality_score"].max() > result["lead_quality_score"].min()
 
 
 # ── Trainer ────────────────────────────────────────────────────────────────────

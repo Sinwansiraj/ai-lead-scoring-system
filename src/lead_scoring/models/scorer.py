@@ -22,8 +22,37 @@ class LeadScorer:
 
     @staticmethod
     def probability_to_score(probability: float) -> int:
-        """Map a [0, 1] probability to an integer [0, 100] quality score."""
+        """Map a [0, 1] probability to an integer [0, 100] quality score (raw, no blending)."""
         return max(0, min(100, round(probability * 100)))
+
+    @staticmethod
+    def composite_score(
+        probability: float,
+        engagement_score: float = 50.0,
+        recency_score: float = 50.0,
+        *,
+        prob_weight: float | None = None,
+        engagement_weight: float | None = None,
+        recency_weight: float | None = None,
+    ) -> int:
+        """
+        Blended lead quality score combining model probability with behavioural signals.
+
+        Prevents the pathological case where a lead with maximum engagement and
+        recent interaction still scores near-zero because the XGBoost probability
+        is low (e.g. cold-call startup leads that are nonetheless very active).
+
+        Weights default to ``settings.score_*_weight`` values so they can be
+        tuned via env vars at deploy time without a code change.
+
+        Default weights: 60 % model probability · 25 % engagement · 15 % recency
+        """
+        pw = prob_weight if prob_weight is not None else settings.score_prob_weight
+        ew = engagement_weight if engagement_weight is not None else settings.score_engagement_weight
+        rw = recency_weight if recency_weight is not None else settings.score_recency_weight
+
+        composite = pw * (probability * 100) + ew * engagement_score + rw * recency_score
+        return max(0, min(100, round(composite)))
 
     @staticmethod
     def score_to_category(score: int) -> str:
@@ -75,7 +104,14 @@ class LeadScorer:
         """
         df = df.copy()
         df["conversion_probability"] = list(probabilities)
-        df["lead_quality_score"] = df["conversion_probability"].apply(cls.probability_to_score)
+        df["lead_quality_score"] = df.apply(
+            lambda row: cls.composite_score(
+                row["conversion_probability"],
+                row.get("engagement_score", 50.0),
+                row.get("recency_score", 50.0),
+            ),
+            axis=1,
+        )
         df["lead_category"] = df["lead_quality_score"].apply(cls.score_to_category)
         df["recommended_action"] = df.apply(
             lambda row: cls.recommend_action(
