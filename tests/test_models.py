@@ -47,9 +47,7 @@ class TestLeadScorer:
 
     def test_composite_score_pure_model_via_explicit_weights(self):
         """With 100% weight on probability, composite == probability_to_score."""
-        score = LeadScorer.composite_score(
-            0.73, 0.0, 0.0, prob_weight=1.0, engagement_weight=0.0, recency_weight=0.0
-        )
+        score = LeadScorer.composite_score(0.73, 0.0, 0.0, prob_weight=1.0, engagement_weight=0.0, recency_weight=0.0)
         assert score == 73
 
     def test_composite_score_clamps_to_0_100(self):
