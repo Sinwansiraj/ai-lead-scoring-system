@@ -48,7 +48,12 @@ class TestLeadScorer:
     def test_composite_score_pure_model_via_explicit_weights(self):
         """With 100% weight on probability, composite == probability_to_score."""
         prob = 0.73
-        assert LeadScorer.composite_score(prob, 0.0, 0.0, prob_weight=1.0, engagement_weight=0.0, recency_weight=0.0) == 73
+        assert (
+            LeadScorer.composite_score(
+                prob, 0.0, 0.0, prob_weight=1.0, engagement_weight=0.0, recency_weight=0.0
+            )
+            == 73
+        )
 
     def test_composite_score_clamps_to_0_100(self):
         assert LeadScorer.composite_score(0.0, 0.0, 0.0) == 0
@@ -122,8 +127,6 @@ class TestLeadScorer:
 
     def test_score_dataframe_uses_engagement_and_recency(self, engineered_df):
         """Two leads with identical probability but very different engagement should score differently."""
-        import pandas as pd
-
         base = engineered_df.iloc[:2].copy()
         probs = [0.20, 0.20]
 
@@ -134,7 +137,6 @@ class TestLeadScorer:
         base.iloc[1, base.columns.get_loc("recency_score")] = 0.0
 
         result = LeadScorer.score_dataframe(base, probs)
-        scores = result.set_index("lead_id")["lead_quality_score"] if "lead_id" in result.columns else result["lead_quality_score"]
         assert result["lead_quality_score"].max() > result["lead_quality_score"].min()
 
 
