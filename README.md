@@ -11,7 +11,7 @@
 [![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
-**[🚀 Live Demo](https://ai-lead-scoring-system.onrender.com/docs) · [📖 API Docs](https://ai-lead-scoring-system.onrender.com/docs) · [📊 Health Check](https://ai-lead-scoring-system.onrender.com/api/v1/health)**
+**[🎯 Lead Scoring Dashboard](https://ai-lead-scoring-system.vercel.app/) · [🚀 Live API](https://ai-lead-scoring-system.onrender.com/docs) · [📖 API Docs](https://ai-lead-scoring-system.onrender.com/docs) · [📊 Health Check](https://ai-lead-scoring-system.onrender.com/api/v1/health)**
 
 </div>
 
