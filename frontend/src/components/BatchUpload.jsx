@@ -1,6 +1,5 @@
 import { useState } from "react"
-
-const API_BASE = "https://ai-lead-scoring-system.onrender.com"
+import { API_BASE } from "../config.js"
 
 const CAT = {
   Hot:  { cls: "text-red-300 bg-red-500/10 border-red-500/25",    bar: "#ef4444", card: "border-red-500/30 bg-red-500/5" },

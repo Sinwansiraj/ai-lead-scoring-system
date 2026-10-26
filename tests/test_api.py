@@ -6,6 +6,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from lead_scoring.api.main import create_app
+from lead_scoring.config import settings
 
 # ── Fixtures ───────────────────────────────────────────────────────────────────
 
@@ -148,3 +149,27 @@ class TestRoot:
     def test_root_returns_200(self, client_with_model):
         resp = client_with_model.get("/")
         assert resp.status_code == 200
+
+
+# ── Rate limiting ────────────────────────────────────────────────────────────────
+
+
+class TestRateLimit:
+    def test_scoring_endpoint_is_rate_limited(self, monkeypatch, model_bundle):
+        """Requests beyond the per-minute limit return 429 with a Retry-After header."""
+        monkeypatch.setattr(settings, "rate_limit_per_minute", 3)
+        app = create_app()
+        app.state.bundle = model_bundle
+
+        with TestClient(app) as client:
+            # Health is exempt and must never be throttled.
+            for _ in range(5):
+                assert client.get("/api/v1/health").status_code == 200
+
+            # The scoring endpoint allows exactly `limit` requests per window.
+            for _ in range(3):
+                assert client.post("/api/v1/score", json=GOOD_LEAD).status_code == 200
+
+            blocked = client.post("/api/v1/score", json=GOOD_LEAD)
+            assert blocked.status_code == 429
+            assert "Retry-After" in blocked.headers

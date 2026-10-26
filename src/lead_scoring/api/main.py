@@ -18,6 +18,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from lead_scoring import __version__
+from lead_scoring.api.middleware import RateLimitMiddleware
 from lead_scoring.api.routes import router
 from lead_scoring.config import settings
 from lead_scoring.models.trainer import LeadScoringTrainer, ModelBundle
@@ -64,10 +65,14 @@ def create_app() -> FastAPI:
         redoc_url="/redoc",
     )
 
-    # CORS — tighten origins in production via env vars
+    # Rate limiting — added before CORS so that 429 responses still carry CORS
+    # headers (middleware added last runs outermost in Starlette).
+    application.add_middleware(RateLimitMiddleware, limit=settings.rate_limit_per_minute)
+
+    # CORS — restricted to known origins; override with the ALLOWED_ORIGINS env var.
     application.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
+        allow_origins=settings.allowed_origins_list,
         allow_methods=["GET", "POST"],
         allow_headers=["*"],
     )

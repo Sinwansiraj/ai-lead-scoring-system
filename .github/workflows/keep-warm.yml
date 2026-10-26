@@ -1,0 +1,23 @@
+name: Keep API warm
+
+# Render's free tier spins a service down after ~15 minutes of inactivity, which
+# causes a ~1-2 minute cold start for the next visitor. Pinging the health
+# endpoint every 10 minutes keeps the instance warm so the live demo responds
+# quickly for recruiters and reviewers.
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping health endpoint
+        run: |
+          echo "Pinging API health endpoint..."
+          # --max-time 150 tolerates a cold start; a slow wake-up must not fail the job.
+          curl -fsS --max-time 150 https://ai-lead-scoring-system.onrender.com/api/v1/health \
+            && echo "" && echo "API is awake." \
+            || echo "Ping did not complete in time (service may be waking up)."

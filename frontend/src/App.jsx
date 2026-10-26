@@ -3,8 +3,7 @@ import HealthBanner from "./components/HealthBanner.jsx"
 import ScoreForm from "./components/ScoreForm.jsx"
 import ScoreResult from "./components/ScoreResult.jsx"
 import BatchUpload from "./components/BatchUpload.jsx"
-
-export const API_BASE = "https://ai-lead-scoring-system.onrender.com"
+import { API_BASE } from "./config.js"
 
 export default function App() {
   const [activeTab, setActiveTab] = useState("score")

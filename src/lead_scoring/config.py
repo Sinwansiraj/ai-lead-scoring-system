@@ -41,6 +41,17 @@ class Settings(BaseSettings):
     api_workers: int = Field(default=1)
     log_level: str = Field(default="INFO")
 
+    # ── Security ───────────────────────────────────────────────────────────
+    allowed_origins: str = Field(
+        default="https://ai-lead-scoring-system.vercel.app,http://localhost:5173,http://localhost:3000",
+        description="Comma-separated list of browser origins permitted by CORS",
+    )
+    rate_limit_per_minute: int = Field(
+        default=60,
+        ge=1,
+        description="Max requests per client IP per minute on non-exempt endpoints",
+    )
+
     # ── Scoring thresholds ─────────────────────────────────────────────────
     hot_threshold: int = Field(default=80, ge=0, le=100)
     warm_threshold: int = Field(default=50, ge=0, le=100)
@@ -78,6 +89,11 @@ class Settings(BaseSettings):
     @property
     def model_path(self) -> Path:
         return self.model_dir / self.model_filename
+
+    @property
+    def allowed_origins_list(self) -> list[str]:
+        """CORS origins parsed from the comma-separated ``allowed_origins`` string."""
+        return [origin.strip() for origin in self.allowed_origins.split(",") if origin.strip()]
 
 
 # Singleton — import this everywhere

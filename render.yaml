@@ -13,8 +13,11 @@ services:
         value: "1"
       - key: LOG_LEVEL
         value: INFO
-      # MODEL_PATH defaults to models/lead_scoring_bundle.joblib (relative to /app)
-      - key: MODEL_PATH
-        value: models/lead_scoring_bundle.joblib
+      # CORS: the deployed Vercel frontend origin allowed to call this API
+      - key: ALLOWED_ORIGINS
+        value: https://ai-lead-scoring-system.vercel.app
+      # Per-IP request cap per minute on the scoring endpoints
+      - key: RATE_LIMIT_PER_MINUTE
+        value: "60"
 
     healthCheckPath: /api/v1/health
