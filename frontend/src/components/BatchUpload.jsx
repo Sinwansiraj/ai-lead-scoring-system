@@ -133,6 +133,15 @@ export default function BatchUpload() {
           ))}
         </div>
 
+        {/* Demo / privacy + production vision note */}
+        <p className="mt-3 text-[11px] leading-relaxed text-slate-500 bg-slate-900/40 border border-slate-700/40 rounded-lg px-3 py-2">
+          <span className="text-slate-300 font-medium">Demo prototype.</span> Paste sample data — inputs are scored in
+          memory over HTTPS and <span className="text-slate-400">never stored</span>. The manual paste is only for a
+          zero-setup demo: in production it would be replaced by a <span className="text-slate-400">data-collection
+          layer</span> that pulls engagement signals straight from a client's stack
+          — <span className="text-slate-400">HubSpot, Salesforce, Mailchimp, GA4</span> — and scores leads automatically.
+        </p>
+
         <div className="flex items-center justify-end mt-4">
           <button
             onClick={handleScore}
